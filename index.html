@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 33 Prepare: Making Decisions (Selection)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fcfcfc;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    line-height: 1.5;
+  }
+  .prep-container { max-width: 900px; margin: 0 auto; }
+  
+  /* Core Panels */
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  h1 { font-size: 26px; font-weight: 600; color: #007BA6; margin-bottom: 0.5rem; }
+  h2 { font-size: 18px; font-weight: 600; color: #007BA6; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .subtitle { font-size: 15px; color: #4a5568; margin-bottom: 1.5rem; }
+  
+  /* Highlight Badges */
+  .badge-diamond { background: #fff5f5; color: #c53030; font-weight: bold; padding: 2px 6px; border-radius: 4px; border: 1px solid #feb2b2; }
+  .badge-kw { background: #f7fafc; color: #4a5568; font-family: monospace; font-weight: bold; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
+
+  /* Interactive Simulator Layout */
+  .sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  @media (max-width: 768px) {
+    .sim-grid { grid-template-columns: 1fr; }
+  }
+
+  .picker-panel {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  
+  .rider-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: #fff;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .rider-btn:hover { border-color: #007BA6; background: #ebf8fa; }
+  .rider-btn.selected { border-color: #007BA6; background: #ebf8fa; font-weight: 600; box-shadow: 0 0 0 2px rgba(0,123,166,0.2); }
+
+  /* Visual Trace Flowchart Panel */
+  .flowchart-preview {
+    background: #ffffff;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Shape CSS Representations */
+  .f-shape {
+    width: 180px;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: monospace;
+    border: 2px solid #cbd5e0;
+    background: #fff;
+    transition: all 0.3s ease;
+  }
+  .f-oval { border-radius: 20px; border-color: #007BA6; color: #005f82; }
+  .f-rect { border-radius: 4px; border-color: #4a5568; }
+  .f-diamond { 
+    width: 130px; 
+    height: 130px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    transform: rotate(45deg); 
+    border-color: #E53E3E; 
+    margin: 10px 0;
+  }
+  .f-diamond span { transform: rotate(-45deg); color: #742a2a; text-align: center; }
+  .f-para { 
+    transform: skew(-15deg); 
+    border-color: #319795;
+    background: #fff;
+  }
+  .f-para span { display: block; transform: skew(15deg); color: #234e52; }
+
+  /* Dynamic Path Highlighting */
+  .lit-path {
+    background: #ebf8fa !important;
+    border-color: #007BA6 !important;
+    box-shadow: 0 0 8px rgba(0,123,166,0.4);
+    color: #007BA6 !important;
+  }
+  .lit-path-yes {
+    background: #e6fffa !important;
+    border-color: #319795 !important;
+    box-shadow: 0 0 8px rgba(49,151,149,0.4);
+  }
+  .lit-path-no {
+    background: #fff5f5 !important;
+    border-color: #E53E3E !important;
+    box-shadow: 0 0 8px rgba(229,62,62,0.4);
+  }
+
+  .arrow { font-size: 14px; color: #cbd5e0; transition: color 0.3s; font-weight: bold; }
+  .arrow.lit { color: #007BA6; }
+
+  /* Quick-Check Quiz CSS */
+  .option-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+  .option-box:hover { background: #f7fafc; }
+  .option-box.correct { background: #e6fffa; border-color: #319795; color: #234e52; font-weight: 600; }
+  .option-box.wrong { background: #fff5f5; border-color: #fed7d7; color: #742a2a; }
+
+  .feedback-text { font-size: 13px; font-weight: 500; margin-top: 0.5rem; display: none; }
+  .feedback-text.show { display: block; }
+
+  .code-snippet {
+    background: #1a1a1a;
+    color: #e2e8f0;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    margin: 0.5rem 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="prep-container" role="main">
+  
+  <div class="card" style="border-left: 5px solid #007BA6;">
+    <h1>Week 33 Prepare: Branching Paths & Selection</h1>
+    <p class="subtitle">Last week, we built linear flowcharts where instructions ran smoothly one after another. This week, we are looking at <strong>Selection</strong>—the moment an algorithm has to ask a question and make a decision!</p>
+  </div>
+
+  <div class="card">
+    <h2><i class="ti ti-school"></i> The Core Rules of Selection</h2>
+    <p>In computer systems, questions usually have a simple <strong>Yes (True)</strong> or <strong>No (False)</strong> answer. We use key terms to handle these branches:</p>
+    
+    <div style="margin-top: 1rem; display: grid; gap: 0.75rem;">
+      <div>📌 <span class="badge-kw">IF</span> checks if a condition is met (e.g., Is the height greater than 140cm?).</div>
+      <div>📌 <span class="badge-kw">THEN</span> holds the instructions that run <strong>only if</strong> the answer is Yes.</div>
+      <div>📌 <span class="badge-kw">ELSE</span> holds the fallback instructions that run <strong>only if</strong> the answer is No.</div>
+    </div>
+    
+    <p style="margin-top: 1rem;">In flowcharts, these questions live inside a <span class="badge-diamond">Diamond Shape</span>. Unlike normal rectangles, a decision diamond always has <strong>two exit arrows</strong> stretching out from it: one marked <em>Yes</em> and one marked <em>No</em>.</p>
+  </div>
+
+  <div class="card">
+    <h2><i class="ti ti-device-gamepad"></i> Interactive Sandbox: The Theme Park Gatekeeper</h2>
+    <p class="subtitle">To get onto the Alton Towers roller coaster, guests must be at least <strong>140 cm tall</strong>. Click on the different guests below to watch how the system shifts path through the flowchart live!</p>
+    
+    <div class="sim-grid">
+      <div class="picker-panel">
+        <h3 style="font-size: 13px; text-transform: uppercase; margin-bottom: 0.5rem; color: #4a5568;">Select a Guest Profile:</h3>
+        
+        <button class="rider-btn" id="btn-jack" onclick="simulate('jack', 155)">
+          <i class="ti ti-user"></i>
+          <div><strong>Jack</strong><br><span style="color:#718096">Height: 155cm (Tall enough)</span></div>
+        </button>
+
+        <button class="rider-btn" id="btn-ruby" onclick="simulate('ruby', 125)">
+          <i class="ti ti-user"></i>
+          <div><strong>Ruby</strong><br><span style="color:#718096">Height: 125cm (Too short)</span></div>
+        </button>
+
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #cbd5e0;">
+          <h4 style="font-size: 12px; font-weight:600; margin-bottom:0.25rem;">The Pseudocode Equivalent:</h4>
+          <div class="code-snippet">
+            IF height >= 140 THEN<br>
+            &nbsp;&nbsp;PRINT "Access Allowed"<br>
+            ELSE<br>
+            &nbsp;&nbsp;PRINT "Too Short!"<br>
+            ENDIF
+          </div>
+        </div>
+      </div>
+
+      <div class="flowchart-preview">
+        <div class="f-shape f-oval lit-path" id="flow-start">START</div>
+        <div class="arrow lit" id="arr-1">↓</div>
+        
+        <div class="f-shape f-diamond" id="flow-if">
+          <span>Is height<br>&gt;= 140?</span>
+        </div>
+        
+        <div style="display: flex; gap: 20px; width: 100%; justify-content: center; margin-top: -5px;">
+          <div style="text-align: center;">
+            <span class="arrow" id="arr-yes">← Yes</span>
+            <div class="f-shape f-para" id="flow-yes" style="margin-top: 5px; width: 110px; font-size:11px;"><span>PRINT "Allowed"</span></div>
+          </div>
+          <div style="text-align: center;">
+            <span class="arrow" id="arr-no">No →</span>
+            <div class="f-shape f-para" id="flow-no" style="margin-top: 5px; width: 110px; font-size:11px;"><span>PRINT "Reject"</span></div>
+          </div>
+        </div>
+        
+        <div class="arrow" id="arr-end" style="margin-top: 5px;">↓</div>
+        <div class="f-shape f-oval" id="flow-end" style="width:100px;">END</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i class="ti ti-circle-check"></i> Quick Knowledge Check</h2>
+    <p class="subtitle">Test your understanding before the practical task next week. Read the question below carefully.</p>
+    
+    <div style="margin-bottom: 1rem;">
+      <strong>Look at this new algorithm rule block:</strong>
+      <div class="code-snippet" style="background:#2d3748;">
+        SET score = 4<br>
+        IF score > 5 THEN<br>
+        &nbsp;&nbsp;PRINT "Bonus Point"<br>
+        ELSE<br>
+        &nbsp;&nbsp;PRINT "Normal Game"<br>
+        ENDIF
+      </div>
+      <p style="font-size:14px; margin-top:0.5rem;">What will print onto the screen when this code executes?</p>
+    </div>
+
+    <div id="quiz-options">
+      <div class="option-box" onclick="checkQuiz(this, false, 'Remember to check the start value! Is 4 actually greater than 5?')">A) "Bonus Point"</div>
+      <div class="option-box" onclick="checkQuiz(this, true, 'Spot on! Because 4 is not greater than 5, the condition is False. The program bypasses the THEN block entirely and executes the fallback ELSE step.')">B) "Normal Game"</div>
+      <div class="option-box" onclick="checkQuiz(this, false, 'Not quite. An algorithm can only choose one structural path inside an IF statement at a single time.')">C) Both messages print out together</div>
+    </div>
+
+    <div id="quiz-feedback" class="feedback-text"></div>
+  </div>
+
+</div>
+
+<script>
+  // Dynamic Flowchart Routing Simulator Logic Engine
+  function simulate(guest, height) {
+    // Clear active selections
+    document.getElementById('btn-jack').classList.remove('selected');
+    document.getElementById('btn-ruby').classList.remove('selected');
+    
+    document.getElementById(`btn-${guest}`).classList.add('selected');
+    
+    // Reset visual flowchart states
+    document.getElementById('flow-if').className = 'f-shape f-diamond';
+    document.getElementById('flow-yes').className = 'f-shape f-para';
+    document.getElementById('flow-no').className = 'f-shape f-para';
+    document.getElementById('flow-end').className = 'f-shape f-oval';
+    document.getElementById('arr-yes').className = 'arrow';
+    document.getElementById('arr-no').className = 'arrow';
+    document.getElementById('arr-end').className = 'arrow';
+
+    // Route calculation execution paths
+    setTimeout(() => {
+      if (height >= 140) {
+        // Highlighting the positive logic loop path
+        document.getElementById('flow-if').classList.add('lit-path-yes');
+        document.getElementById('arr-yes').classList.add('lit');
+        document.getElementById('flow-yes').classList.add('lit-path-yes');
+      } else {
+        // Highlighting the negative logic loop fallback path
+        document.getElementById('flow-if').classList.add('lit-path-no');
+        document.getElementById('arr-no').classList.add('lit');
+        document.getElementById('flow-no').classList.add('lit-path-no');
+      }
+      document.getElementById('arr-end').classList.add('lit');
+      document.getElementById('flow-end').classList.add('lit-path');
+    }, 150);
+  }
+
+  // Interactive Quiz State Feedback Controller
+  function checkQuiz(element, isCorrect, feedbackMsg) {
+    // Reset selection elements
+    const options = document.getElementById('quiz-options').children;
+    for (let opt of options) {
+      opt.className = 'option-box';
+    }
+    
+    const fbText = document.getElementById('quiz-feedback');
+    fbText.className = 'feedback-text show';
+    fbText.textContent = feedbackMsg;
+
+    if (isCorrect) {
+      element.classList.add('correct');
+      fbText.style.color = '#234e52';
+    } else {
+      element.classList.add('wrong');
+      fbText.style.color = '#742a2a';
+    }
+  }
+
+  // Auto boot the simulator default view state
+  simulate('jack', 155);
+</script>
+
+</body>
+</html>
